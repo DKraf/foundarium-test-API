@@ -3,13 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class Car extends Authenticatable
+class Car extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, HasFactory;
 
     /**
      * The attributes that are mass assignable.
@@ -39,10 +40,10 @@ class Car extends Authenticatable
 
 
     /**
-     * @return HasMany
+     * @return HasOne
      */
-    public function booking(): HasMany
+    public function booking(): HasOne
     {
-        return $this->hasMany(BookingCar::class);
+        return $this->HasOne(CarBooking::class);
     }
 }
