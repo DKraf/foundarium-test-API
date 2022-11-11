@@ -11,5 +11,5 @@ use Illuminate\Http\Request;
 interface IBooking
 {
     public function book($id);
-    public function cancel($id);
+    public function cancel();
 }

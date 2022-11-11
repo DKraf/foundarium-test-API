@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\API\Auth\AuthController;
+use App\Http\Controllers\API\Booking\CarBookingController;
+use App\Http\Controllers\API\Car\CarController;
 use App\Http\Controllers\API\User\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -28,25 +30,31 @@ Route::group(['prefix' => 'auth'], function () {
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::group(['prefix' => 'auth'], function () {
-        Route::post('logout', [AuthController::class, 'logout']);
+        Route::post('logout',   [AuthController::class, 'logout']);
     });
 
+// Роуты сущности Пользователь
     Route::group(['prefix' => 'user'], function () {
         Route::post('{id}',    [UserController::class, 'update'])->middleware('checkAdminRole');
-        Route::get('/',       [UserController::class, 'list'])->middleware('checkAdminRole');
-        Route::get('{id}',    [UserController::class, 'read'])->middleware('checkAdminRole');;
-        Route::delete('{id}', [UserController::class, 'delete'])->middleware('checkAdminRole');
+        Route::get('/',        [UserController::class, 'list'])->middleware('checkAdminRole');
+        Route::get('{id}',     [UserController::class, 'read'])->middleware('checkAdminRole');;
+        Route::delete('{id}',  [UserController::class, 'delete'])->middleware('checkAdminRole');
     });
 
+// Роуты сущности Автомобиль
     Route::group(['prefix' => 'car'], function () {
-        Route::put('{id}',    [CarController::class, 'upadate'])->middleware('checkAdminRole');
+        Route::post('/',      [CarController::class, 'store'])->middleware('checkAdminRole');
+        Route::post('{id}',   [CarController::class, 'update'])->middleware('checkAdminRole');
         Route::get('/',       [CarController::class, 'list']);
         Route::get('{id}',    [CarController::class, 'read'])->middleware('checkAdminRole');
         Route::delete('{id}', [CarController::class, 'delete'])->middleware('checkAdminRole');
     });
 
+    // Роуты бронирования автомобиля
     Route::group(['prefix' => 'booking'], function () {
         Route::post('book/{id}',    [CarBookingController::class, 'book']);
-        Route::post('cancel/{id}',  [CarBookingController::class, 'cancel']);
+        Route::post('cancel',  [CarBookingController::class, 'cancel']);
+        Route::get('active',  [CarBookingController::class, 'active']);
+
     });
 });

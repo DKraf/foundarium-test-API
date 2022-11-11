@@ -51,7 +51,7 @@ class Handler extends ExceptionHandler
             if ($e->getCode() === 404) {
                 return $this->error($e->getMessage(), 404);
             }
-            return $this->error($e->getMessage(), $e->getCode() ?? 400);
+            return $this->error($e->getMessage(), ($e->getCode() == 0) ? 400 : $e->getCode() );
 
         });
     }
