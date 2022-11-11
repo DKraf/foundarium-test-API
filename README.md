@@ -1,5 +1,9 @@
 Тестовое задание FoundArium 
 
+swagger доступен по роуту:
+
+    http://127.0.0.1:8000/documentation
+
 Стек:
     
     PHP 8.1
