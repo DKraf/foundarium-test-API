@@ -4,9 +4,13 @@ namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
+use App\Traits\ResponseJsonWithHttpStatus;
+
 
 class Handler extends ExceptionHandler
 {
+    use ResponseJsonWithHttpStatus;
+
     /**
      * A list of exception types with their corresponding custom log levels.
      *
@@ -43,8 +47,12 @@ class Handler extends ExceptionHandler
      */
     public function register()
     {
-        $this->reportable(function (Throwable $e) {
-            //
+        $this->renderable(function (Throwable $e) {
+            if ($e->getCode() === 404) {
+                return $this->error($e->getMessage(), 404);
+            }
+            return $this->error($e->getMessage(), $e->getCode() ?? 400);
+
         });
     }
 }
