@@ -1,0 +1,957 @@
+openapi: 3.0.3
+info:
+  title: FoundArium - Test Rest API
+  description: |-
+    Реализация технического задания для FoundArium.
+
+    _Стек:_
+
+    - PHP 8.1
+    - Laravel 9
+    - PgSQL
+
+    Бизнес Требование:
+
+    Даны два списка. Список автомобилей и список пользователей.
+    C помощью laravel сделать api для управления списком использования автомобилей пользователями.
+    В один момент времени 1 пользователь может управлять только одним автомобилем. В один момент времени 1 автомобилем может управлять только 1 пользователь.
+
+  version: 1.0.
+components:
+  securitySchemes:
+    bearerAuth:            # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+servers:
+  - url: http://localhost:8000/api/
+tags:
+  - name: auth
+    description: Авторизация, создание пользователя, логаут
+  - name: user
+    description: Пользователь
+  - name: car
+    description: Автомобиль
+  - name: booking
+    description: Бронирование
+paths:
+  /auth/register:
+    post:
+      tags:
+        - auth
+      summary: Создание нового пользователя
+      description: Создание нового пользователя
+      operationId: addUser
+      requestBody:
+        description: Создание нового пользователя
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                first_name:
+                  type: string
+                  example: Dmitriy
+                last_name:
+                  type: string
+                  example: Kravchenko
+                patronymic:
+                  type: string
+                  example: Leonidovich
+                password:
+                  type: string
+                  example: 1q2w3e4r
+                phone:
+                  type: string
+                  example: +77714724530
+                email:
+                  type: string
+                  example: dkraf9006@gmail.com
+      responses:
+        '200':
+          description: success responce
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: true
+                  message:
+                    type: string
+                    example: ''
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: 2
+        '400':
+          description: some error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: false
+                  message:
+                    type: string
+                    example: 'Пользователь с таким email уже сущевствует'
+                  data:
+                    type: object
+        default:
+          description: Unexpected error
+  /auth/login:
+    post:
+      tags:
+        - auth
+      summary: Авторизация пользователя
+      description: Авторизация пользователя
+      operationId: login
+      requestBody:
+        description: Авторизация
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: dkraf9006@gmail.com
+                password:
+                  type: string
+                  example: 1q2w3e4r
+      responses:
+        '200':
+          description: success responce
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: true
+                  message:
+                    type: string
+                    example: ''
+                  data:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                        example: 7|V9GJBMfi7gyBzSaLjjR59n9qklrbOCHY1U6lEihM
+        '404':
+          description: user not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: false
+                  message:
+                    type: string
+                    example: 'Пользователь не найден'
+                  data:
+                    type: object
+        '401':
+          description: pwd error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: false
+                  message:
+                    type: string
+                    example: 'Пароль указан не верно'
+                  data:
+                    type: object
+        default:
+          description: Unexpected error
+  /auth/logout:
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - auth
+      summary: Выход пользователя
+      description: Выход пользователя
+      operationId: Logout
+      responses:
+        '200':
+          description: success responce
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: true
+                  message:
+                    type: string
+                    example: ''
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: 1
+        default:
+          description: Unexpected error
+  /user:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - user
+      summary: Список  пользователей
+      responses:
+        '200':
+          description: success responce
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: true
+                  message:
+                    type: string
+                    example: ''
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: 2
+                      fifirst_named:
+                        type: string
+                        example: Dmitriy
+                      last_name:
+                        type: string
+                        example: Kravchenko
+                      email:
+                        type: string
+                        example: dkraf9006@gmail.com
+                      phone:
+                        type: string
+                        example: +7(771)472-45-30
+        '422':
+          description: DB error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: false
+                  message:
+                    type: string
+                    example: 'Ошибка получения данных'
+                  data:
+                    type: object
+        default:
+          description: Unexpected error
+  /user/{id}:
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - user
+      summary: Обновить данные пользователя
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID пользовотеля
+          schema:
+            type : integer
+            format: int64
+            minimum: 1
+      description: Обновить данные пользователя
+      operationId: Update
+      requestBody:
+        description: Обновить данные
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                first_name:
+                  type: string
+                  example: Dmitriy
+                last_name:
+                  type: string
+                  example: Kravchenko
+                patronymic:
+                  type: string
+                  example:
+                phone:
+                  type: string
+                  example: +77714724530
+                email:
+                  type: string
+                  example: dkraf9006@gmail.com
+      responses:
+        '200':
+          description: success responce
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: true
+                  message:
+                    type: string
+                    example: ''
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: 2
+        '404':
+          description: user not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: false
+                  message:
+                    type: string
+                    example: 'Пользователь с указаным ID не найден'
+                  data:
+                    type: object
+        default:
+          description: Unexpected error
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - user
+      summary: Информация о пользователе
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID пользовотеля
+          schema:
+            type : integer
+            format: int64
+            minimum: 1
+      responses:
+        '200':
+          description: success responce
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: true
+                  message:
+                    type: string
+                    example: ''
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: 2
+                      fifirst_named:
+                        type: string
+                        example: Dmitriy
+                      last_name:
+                        type: string
+                        example: Kravchenko
+                      email:
+                        type: string
+                        example: dkraf9006@gmail.com
+                      phone:
+                        type: string
+                        example: +7(771)472-45-30
+        '422':
+          description: DB error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: false
+                  message:
+                    type: string
+                    example: 'Ошибка получения данных'
+                  data:
+                    type: object
+        '404':
+          description: user not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: false
+                  message:
+                    type: string
+                    example: 'Пользователь с указаным ID не найден'
+                  data:
+                    type: object
+        default:
+          description: Unexpected error
+    delete:
+      security:
+        - bearerAuth: []
+      tags:
+        - user
+      summary: Удалить пользователя
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID пользовотеля
+          schema:
+            type : integer
+            format: int64
+            minimum: 1
+      responses:
+        '200':
+          description: success responce
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: true
+                  message:
+                    type: string
+                    example: ''
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: 2
+        '404':
+          description: user not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: false
+                  message:
+                    type: string
+                    example: 'Пользователь с указаным ID не найден'
+                  data:
+                    type: object
+        default:
+          description: Unexpected error
+  /car:
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - car
+      summary: Создание нового автомобиля
+      description: Создание нового автомобиля
+      operationId: addCar
+      requestBody:
+        description: Создание нового автомобиля
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                brand:
+                  type: string
+                  example: Toyota
+                model:
+                  type: string
+                  example: Camry
+                color:
+                  type: string
+                  example: black
+      responses:
+        '200':
+          description: success responce
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: true
+                  message:
+                    type: string
+                    example: ''
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: 2
+        '400':
+          description: some error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: false
+                  message:
+                    type: string
+                    example: 'Автомобиль создан ранее'
+                  data:
+                    type: object
+        default:
+          description: Unexpected error
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - car
+      summary: Список автомобилей
+      responses:
+        '200':
+          description: success responce
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: true
+                  message:
+                    type: string
+                    example: ''
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: 2
+                      brand:
+                        type: string
+                        example: Toyota
+                      model:
+                        type: string
+                        example: Camry
+                      color:
+                        type: string
+                        example: black
+        '422':
+          description: DB error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: false
+                  message:
+                    type: string
+                    example: 'Ошибка получения данных'
+                  data:
+                    type: object
+        default:
+          description: Unexpected error
+  /car/{id}:
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - car
+      summary: Обновить данные автомобиля
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID автомобиля
+          schema:
+            type : integer
+            format: int64
+            minimum: 1
+      description: Обновить данные автомобиля
+      operationId: Car Update
+      requestBody:
+        description: Обновить данные
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                brand:
+                  type: string
+                  example: Toyota
+                model:
+                  type: string
+                  example: Camry
+                color:
+                  type: string
+                  example: black
+      responses:
+        '200':
+          description: success responce
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: true
+                  message:
+                    type: string
+                    example: ''
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: 2
+        '404':
+          description: user not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: false
+                  message:
+                    type: string
+                    example: 'Автомобиль с указаным ID не найден'
+                  data:
+                    type: object
+        default:
+          description: Unexpected error
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - car
+      summary: Информация об автомобиле
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID Автомобиля
+          schema:
+            type : integer
+            format: int64
+            minimum: 1
+      responses:
+        '200':
+          description: success responce
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: true
+                  message:
+                    type: string
+                    example: ''
+                  data:
+                    type: object
+                    properties:
+                      brand:
+                        type: string
+                        example: Toyota
+                      model:
+                        type: string
+                        example: Camry
+                      color:
+                        type: string
+                        example: black
+        '422':
+          description: DB error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: false
+                  message:
+                    type: string
+                    example: 'Ошибка получения данных'
+                  data:
+                    type: object
+        '404':
+          description: user not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: false
+                  message:
+                    type: string
+                    example: 'Автомобиль с указаным ID не найден'
+                  data:
+                    type: object
+        default:
+          description: Unexpected error
+    delete:
+      security:
+        - bearerAuth: []
+      tags:
+        - car
+      summary: Удалить Автомобиль
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID Автомобиля
+          schema:
+            type : integer
+            format: int64
+            minimum: 1
+      responses:
+        '200':
+          description: success responce
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: true
+                  message:
+                    type: string
+                    example: ''
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: 2
+        '404':
+          description: user not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: false
+                  message:
+                    type: string
+                    example: 'Автомобиль с указаным ID не найден'
+                  data:
+                    type: object
+        default:
+          description: Unexpected error
+  /booking/book/{id}:
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - booking
+      summary: Забронировать авто
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID автомобиля
+          schema:
+            type : integer
+            format: int64
+            minimum: 1
+      description: Забронировать авто
+      operationId: booking
+      responses:
+        '200':
+          description: success responce
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: true
+                  message:
+                    type: string
+                    example: ''
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: 2
+        '400':
+          description: user not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: false
+                  message:
+                    type: string
+                    example: 'У вас уже есть забронированный автомобиль'
+                  data:
+                    type: object
+        default:
+          description: Unexpected error
+  /booking/cancel:
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - booking
+      summary: Отменить бронь авто
+      description: Отменить бронь авто
+      operationId: cancelBooking
+      responses:
+        '200':
+          description: success responce
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: true
+                  message:
+                    type: string
+                    example: ''
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: 2
+        '404':
+          description: user not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: false
+                  message:
+                    type: string
+                    example: 'У вас нет забронированного автомобиля'
+                  data:
+                    type: object
+        default:
+          description: Unexpected error
+  /booking/active:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - booking
+      summary: Посмотреть забронированный авто
+      responses:
+        '200':
+          description: success responce
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: true
+                  message:
+                    type: string
+                    example: ''
+                  data:
+                    type: object
+                    properties:
+                      car:
+                        type: object
+                        properties:
+                          brand:
+                            type: string
+                            example: Toyota
+                          model:
+                            type: string
+                            example: Camry
+                          color:
+                            type: string
+                            example: black
+                          create_at:
+                            type: string
+                            example: 10.10.2020
+                      book:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                            example: 1
+                          user_id:
+                            type: integer
+                            example: 1
+                          car_id:
+                            type: integer
+                            example: 1
+                          create_at:
+                            type: string
+                            example: 10.10.2020
+        '422':
+          description: DB error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: false
+                  message:
+                    type: string
+                    example: 'Ошибка получения данных'
+                  data:
+                    type: object
+        default:
+          description: Unexpected error
