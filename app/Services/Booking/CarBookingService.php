@@ -29,6 +29,9 @@ class CarBookingService implements IBooking
             throw new \Exception('У вас уже есть забронированный автомобиль', 400);
         }
 
+        if (CarBooking::where('car_id', $id)->first()) {
+            throw new \Exception('Авто уже забронированно! Выберите другой', 401);
+        }
         try {
 
             $book = CarBooking::create(['car_id' => $id , 'user_id' => Auth::user()->id]);
